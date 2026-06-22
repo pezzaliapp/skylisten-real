@@ -1,1 +1,16 @@
-{"name":"skylisten-server","version":"1.0.0","type":"module","scripts":{"start":"node server.js"},"dependencies":{"ws":"^8.18.0"}}
+{
+  "name": "skylisten-server",
+  "version": "1.1.0",
+  "description": "Server mesh WebSocket per SkyListen Real: sincronizza i nodi e diffonde gli allarmi multi-nodo.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
