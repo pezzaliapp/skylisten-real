@@ -9,6 +9,7 @@
     "format": "prettier --write \"*.{js,css,html,json,md}\" \"js/**/*.js\" \"server/**/*.js\"",
     "format:check": "prettier --check \"*.{js,css,html,json}\" \"js/**/*.js\" \"server/**/*.js\"",
     "lint": "eslint js app.js sw.js server",
+    "test:mesh": "node test/two-clients.mjs",
     "icons": "node icons/generate-icons.mjs",
     "serve": "python3 -m http.server 8080"
   },

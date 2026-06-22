@@ -45,7 +45,7 @@
     <div class="header-row">
       <h1>Mappa — SkyListen Real</h1>
       <nav class="headernav">
-        <a class="headerlink" href="index.html">← App</a>
+        <a class="headerlink" href="index.html" target="_blank" rel="noopener">App ↗</a>
         <a class="headerlink" href="manuale.html">Manuale</a>
       </nav>
     </div>
@@ -156,21 +156,34 @@
         }
       }
 
-      $('connect').onclick = () => {
+      function doConnect() {
+        const url = $('wsurl').value;
+        localStorage['skylisten-wsurl'] = url; // condiviso con la pagina app
         // La mappa è un consumatore di sola lettura: si connette come "viewer"
         // con un id separato, così non collide con i nodi-sensore né li chiude.
-        mesh.connect($('wsurl').value, {
+        mesh.connect(url, {
           onStatus: (t) => { $('status').textContent = t; },
           onLog: () => {},
           onEvent: upsertNode,
           onAlarm: handleAlarm,
         }, { role: 'viewer' });
-      };
+      }
+      $('connect').onclick = doConnect;
+
+      const isDemo = /(?:[?&]demo=1|#demo)/.test(location.search + location.hash);
+
+      // URL condiviso con l'app + connessione automatica: aprendo la mappa in
+      // una nuova scheda si collega da sola, senza chiudere la connessione
+      // dell'app (che vive in un'altra scheda/contesto).
+      if (!isDemo && localStorage['skylisten-wsurl']) {
+        $('wsurl').value = localStorage['skylisten-wsurl'];
+        doConnect();
+      }
 
       refreshEmpty();
 
       // Modalità demo (?demo=1 oppure #demo): inietta dati di test senza server.
-      if (/(?:[?&]demo=1|#demo)/.test(location.search + location.hash)) {
+      if (isDemo) {
         $('status').textContent = 'Modalità demo (dati di test)';
         const base = [
           { node: 'NODO-A', score: 0.35, ts: Date.now(), gps: { lat: 44.49, lon: 11.34 } },

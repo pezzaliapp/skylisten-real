@@ -25,6 +25,13 @@ let clockOffset = 0;
  */
 let identity = { role: 'sensor', node: null };
 
+// Stato per la riconnessione automatica.
+let lastUrl = null;
+let lastCb = {};
+let manualClose = false;
+let reconnectTimer = null;
+let backoff = 1000; // ms, con crescita esponenziale fino a 10s
+
 /**
  * Timestamp corrente corretto con l'offset del server.
  * @returns {number} millisecondi epoch sincronizzati
@@ -55,11 +62,22 @@ export function connect(url, cb = {}, opts = {}) {
     (identity.role === 'viewer'
       ? 'VIEWER-' + Math.random().toString(36).slice(2, 7).toUpperCase()
       : null); // null => usa l'id del nodo dallo store
-  ws = new WebSocket(url);
+  lastUrl = url;
+  lastCb = cb;
+  manualClose = false;
+  openSocket();
+}
+
+/** (Ri)apre il socket usando l'ultima url/callback note. */
+function openSocket() {
+  clearTimeout(reconnectTimer);
+  reconnectTimer = null;
+  ws = new WebSocket(lastUrl);
 
   ws.onopen = () => {
-    cb.onStatus?.('Connesso');
-    cb.onLog?.('Mesh connessa');
+    backoff = 1000; // reset del backoff a connessione riuscita
+    lastCb.onStatus?.('Connesso');
+    lastCb.onLog?.('Mesh connessa');
     send({ kind: 'hello' });
   };
 
@@ -71,19 +89,38 @@ export function connect(url, cb = {}, opts = {}) {
       return;
     }
     if (m.kind === 'alarm') {
-      cb.onAlarm?.(m);
+      lastCb.onAlarm?.(m);
     } else if (m.kind === 'event') {
-      cb.onEvent?.(m);
+      lastCb.onEvent?.(m);
     } else if (m.kind === 'sync_reply') {
       clockOffset = m.serverTs - Date.now();
-      cb.onLog?.('Offset clock ' + clockOffset + ' ms');
+      lastCb.onLog?.('Offset clock ' + clockOffset + ' ms');
     } else if (m.kind === 'info') {
-      cb.onLog?.('Server: ' + m.text);
+      lastCb.onLog?.('Server: ' + m.text);
     }
   };
 
-  ws.onclose = () => cb.onStatus?.('Disconnesso');
-  ws.onerror = () => cb.onLog?.('Errore connessione mesh');
+  // Una chiusura non voluta (rete, riavvio server) avvia la riconnessione:
+  // così le pagine restano connesse in modo robusto e indipendente.
+  ws.onclose = () => {
+    if (manualClose) {
+      lastCb.onStatus?.('Disconnesso');
+      return;
+    }
+    lastCb.onStatus?.('Riconnessione…');
+    reconnectTimer = setTimeout(openSocket, backoff);
+    backoff = Math.min(backoff * 2, 10000);
+  };
+
+  ws.onerror = () => lastCb.onLog?.('Errore connessione mesh');
+}
+
+/** Chiude volontariamente la connessione e ferma la riconnessione. */
+export function disconnect() {
+  manualClose = true;
+  clearTimeout(reconnectTimer);
+  reconnectTimer = null;
+  if (ws) ws.close();
 }
 
 /**

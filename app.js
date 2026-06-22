@@ -28,6 +28,9 @@ const nodeIdInput = $('nodeId');
 nodeIdInput.value = store.nodeId;
 nodeIdInput.onchange = () => setNodeId(nodeIdInput.value);
 
+// URL del server condiviso fra app e mappa (riusabile fra le pagine).
+if (localStorage['skylisten-wsurl']) $('wsurl').value = localStorage['skylisten-wsurl'];
+
 $('thr').oninput = () => { $('thrval').textContent = $('thr').value; };
 
 /** Avvia il microfono e il loop di rilevamento. */
@@ -89,7 +92,9 @@ async function calibrate() {
 
 /** Connette la PWA alla mesh WebSocket, instradando i messaggi sul DOM. */
 function connect() {
-  mesh.connect($('wsurl').value, {
+  const url = $('wsurl').value;
+  localStorage['skylisten-wsurl'] = url; // condiviso con la pagina mappa
+  mesh.connect(url, {
     onLog: log,
     onStatus: (text) => { $('mesh').textContent = text; },
     onAlarm: (m) => {

@@ -129,7 +129,7 @@ wss.on('connection', (ws, req) => {
   ws.on('pong', () => { ws.isAlive = true; });
 
   const peer = req.socket.remoteAddress;
-  log('info', 'client connesso', { peer });
+  log('info', 'client connesso', { peer, clients: wss.clients.size });
   sendTo(ws, { kind: 'info', text: 'SkyListen server ready' });
 
   ws.on('message', (buf) => {

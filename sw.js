@@ -14,7 +14,7 @@
  *      * altri asset same-origin -> cache-first con aggiornamento in background.
  */
 
-const VERSION = 'v8';
+const VERSION = 'v9';
 const CACHE = `skylisten-${VERSION}`;
 const OFFLINE_URL = 'offline.html';
 
