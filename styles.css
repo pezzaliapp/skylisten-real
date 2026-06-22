@@ -28,6 +28,12 @@ h1 {
   flex-wrap: wrap;
 }
 
+.headernav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .headerlink {
   font-weight: 700;
   border: 1px solid #36506d;

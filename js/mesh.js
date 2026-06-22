@@ -30,6 +30,7 @@ export function now() {
  * @property {(text:string)=>void} [onLog]     riga di log
  * @property {(text:string)=>void} [onStatus]  stato connessione (Connesso/...)
  * @property {(msg:Object)=>void}  [onAlarm]   messaggio di allarme dal server
+ * @property {(msg:Object)=>void}  [onEvent]   evento posizionato di un nodo (per la mappa)
  */
 
 /**
@@ -55,6 +56,8 @@ export function connect(url, cb = {}) {
     }
     if (m.kind === 'alarm') {
       cb.onAlarm?.(m);
+    } else if (m.kind === 'event') {
+      cb.onEvent?.(m);
     } else if (m.kind === 'sync_reply') {
       clockOffset = m.serverTs - Date.now();
       cb.onLog?.('Offset clock ' + clockOffset + ' ms');

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b0f14">
+  <meta name="description" content="Mappa pubblica in tempo reale dei rilevamenti SkyListen Real.">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Leaflet da CDN gratuito (unpkg). Se offline non si carica: fallback gestito. -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <title>Mappa — SkyListen Real</title>
+  <style>
+    /* Coerente con styles.css. */
+    .map-wrap { max-width: 1100px; }
+    #map {
+      width: 100%;
+      height: 70vh;
+      min-height: 320px;
+      background: #071018;            /* tinta coerente quando i tile non caricano */
+      border: 1px solid #26384f;
+      border-radius: 16px;
+    }
+    .empty-msg {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 14px;
+      border-left: 3px solid #ffd166;
+      background: #0d1521;
+      border-radius: 0 10px 10px 0;
+      color: #c4d4e8;
+    }
+    .empty-msg.show { display: block; }
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; }
+    .legend .pill { display: inline-flex; align-items: center; gap: 6px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .leaflet-popup-content { color: #0b0f14; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Salta al contenuto</a>
+
+  <header>
+    <div class="header-row">
+      <h1>Mappa — SkyListen Real</h1>
+      <nav class="headernav">
+        <a class="headerlink" href="index.html">← App</a>
+        <a class="headerlink" href="manuale.html">Manuale</a>
+      </nav>
+    </div>
+    <p class="tagline">Rilevamenti dei nodi in tempo reale (rete mesh locale)</p>
+  </header>
+
+  <main id="main" class="map-wrap">
+    <section class="card">
+      <p>
+        <label for="wsurl">Server WS</label>
+        <input id="wsurl" type="text" inputmode="url" autocomplete="off" value="ws://192.168.1.10:8787">
+        <button id="connect" type="button">Connetti</button>
+      </p>
+      <p id="status" class="small" aria-live="polite">Non connesso</p>
+      <div class="legend small">
+        <span class="pill"><span class="dot" style="background:#53d769"></span> score basso</span>
+        <span class="pill"><span class="dot" style="background:#ffd166"></span> medio</span>
+        <span class="pill"><span class="dot" style="background:#ff5c7a"></span> alto</span>
+        <span class="pill"><span class="dot" style="background:transparent;border:2px solid #ff5c7a"></span> zona stimata (allarme confermato)</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div id="map" role="application" aria-label="Mappa dei rilevamenti"></div>
+      <p id="emptyMsg" class="empty-msg">Nessun nodo posizionato.</p>
+    </section>
+  </main>
+
+  <!-- Leaflet JS da CDN gratuito. Caricato come classico prima del modulo. -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script type="module">
+    import * as mesh from './js/mesh.js';
+
+    const $ = (id) => document.getElementById(id);
+    const DEFAULT_VIEW = [44.5, 11.35]; // vista di default (centro Italia)
+    const DEFAULT_ZOOM = 5;
+
+    // Fallback grazioso se Leaflet non è disponibile (es. offline al primo avvio).
+    if (!window.L) {
+      $('map').innerHTML =
+        '<div style="padding:24px;color:#c4d4e8">Mappa non disponibile offline: ' +
+        'la libreria si carica da rete. Riconnettiti e ricarica.</div>';
+      $('status').textContent = 'Leaflet non caricato (offline)';
+    } else {
+      initMap();
+    }
+
+    function initMap() {
+      const map = L.map('map').setView(DEFAULT_VIEW, DEFAULT_ZOOM);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap',
+      }).addTo(map);
+
+      const markers = new Map(); // nodeId -> L.circleMarker
+      let estimateCircle = null;
+
+      function colorFor(score) {
+        if (score >= 0.7) return '#ff5c7a';
+        if (score >= 0.4) return '#ffd166';
+        return '#53d769';
+      }
+
+      function refreshEmpty() {
+        $('emptyMsg').classList.toggle('show', markers.size === 0);
+      }
+
+      function fmtTime(ts) {
+        const n = Number(ts);
+        return Number.isFinite(n) ? new Date(n).toLocaleTimeString() : '—';
+      }
+
+      // Aggiunge/aggiorna il marker di un nodo posizionato.
+      function upsertNode({ node, score, ts, gps }) {
+        if (!gps || gps.lat == null || gps.lon == null) return;
+        const s = Math.max(0, Math.min(1, Number(score) || 0));
+        const radius = 6 + s * 14;
+        const color = colorFor(s);
+        const popup = `<b>${node || 'nodo'}</b><br>score ${s.toFixed(2)}<br>${fmtTime(ts)}`;
+        let m = markers.get(node);
+        if (m) {
+          m.setLatLng([gps.lat, gps.lon]);
+          m.setStyle({ color, fillColor: color });
+          m.setRadius(radius);
+          m.getPopup() ? m.setPopupContent(popup) : m.bindPopup(popup);
+        } else {
+          m = L.circleMarker([gps.lat, gps.lon], {
+            radius, color, fillColor: color, fillOpacity: 0.6, weight: 2,
+          }).addTo(map).bindPopup(popup);
+          markers.set(node, m);
+        }
+        refreshEmpty();
+      }
+
+      // Disegna la zona stimata (cerchio) su allarme CONFERMATO.
+      function handleAlarm(m) {
+        // gli allarmi CONFERMATO includono l'elenco eventi: aggiorna anche i marker
+        if (Array.isArray(m.events)) m.events.forEach(upsertNode);
+        if (m.level === 'CONFERMATO' && m.estimate &&
+            m.estimate.lat != null && m.estimate.lon != null) {
+          const { lat, lon, radius_m } = m.estimate;
+          if (estimateCircle) map.removeLayer(estimateCircle);
+          estimateCircle = L.circle([lat, lon], {
+            radius: Number(radius_m) || 100,
+            color: '#ff5c7a', fillColor: '#ff5c7a', fillOpacity: 0.12, weight: 2,
+          }).addTo(map).bindPopup(`Zona stimata (${m.count} nodi)`);
+          map.fitBounds(estimateCircle.getBounds().pad(0.5));
+        }
+      }
+
+      $('connect').onclick = () => {
+        mesh.connect($('wsurl').value, {
+          onStatus: (t) => { $('status').textContent = t; },
+          onLog: () => {},
+          onEvent: upsertNode,
+          onAlarm: handleAlarm,
+        });
+      };
+
+      refreshEmpty();
+
+      // Modalità demo (?demo=1 oppure #demo): inietta dati di test senza server.
+      if (/(?:[?&]demo=1|#demo)/.test(location.search + location.hash)) {
+        $('status').textContent = 'Modalità demo (dati di test)';
+        const base = [
+          { node: 'NODO-A', score: 0.35, ts: Date.now(), gps: { lat: 44.49, lon: 11.34 } },
+          { node: 'NODO-B', score: 0.62, ts: Date.now(), gps: { lat: 44.51, lon: 11.36 } },
+          { node: 'NODO-C', score: 0.88, ts: Date.now(), gps: { lat: 44.50, lon: 11.33 } },
+        ];
+        base.forEach(upsertNode);
+        handleAlarm({
+          kind: 'alarm', level: 'CONFERMATO', count: 3,
+          estimate: { method: 'weighted-centroid-preTDOA', lat: 44.50, lon: 11.343, radius_m: 1500 },
+          events: base,
+        });
+      }
+    }
+  </script>
+</body>
+</html>

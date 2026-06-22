@@ -26,6 +26,7 @@ const CONFIRM_MIN_SCORE = 0.55; // score minimo per contare come conferma
 const CONFIRM_NODES = 3;        // nodi distinti necessari all'allarme
 const EVENTS_MAX = 500;         // dimensione massima del buffer eventi
 const HEARTBEAT_MS = 30000;     // intervallo ping per scollegare i client morti
+const RELAY_THROTTLE_MS = 500;  // ritrasmissione max degli eventi posizionati per nodo
 
 /** Logger strutturato in JSON (una riga per evento). */
 function log(level, msg, extra = {}) {
@@ -99,6 +100,20 @@ function evaluate() {
   }
 }
 
+/**
+ * Ritrasmette agli altri client gli eventi *posizionati*, in forma ridotta
+ * (solo nodo/score/ts/gps, mai audio), così la mappa pubblica può mostrare i
+ * marker dei nodi in tempo reale. Throttling per nodo per non saturare la rete.
+ */
+const lastRelay = new Map();
+function relayEvent(ev) {
+  if (!ev.gps || ev.gps.lat == null || ev.gps.lon == null) return;
+  const now = Date.now();
+  if (now - (lastRelay.get(ev.node) || 0) < RELAY_THROTTLE_MS) return;
+  lastRelay.set(ev.node, now);
+  broadcast({ kind: 'event', node: ev.node, score: ev.score, ts: ev.ts, gps: ev.gps });
+}
+
 /** Semplice limitatore di frequenza per client (messaggi/sec). */
 function rateLimited(state) {
   const now = Date.now();
@@ -136,9 +151,11 @@ wss.on('connection', (ws, req) => {
       } else if (m.kind === 'hello') {
         broadcast({ kind: 'info', text: `${id} online` });
       } else if (m.kind === 'event' && m.event && typeof m.event === 'object') {
-        events.push({ ...m.event, node: id, gps: m.event.gps || m.gps, received: Date.now() });
+        const ev = { ...m.event, node: id, gps: m.event.gps || m.gps, received: Date.now() };
+        events.push(ev);
         if (events.length > EVENTS_MAX) events = events.slice(-EVENTS_MAX);
         evaluate();
+        relayEvent(ev);
       }
     } catch (err) {
       log('error', 'gestione messaggio fallita', { id, error: String(err) });
