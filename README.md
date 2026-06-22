@@ -4,17 +4,13 @@ Progetto gratuito e locale per prototipo reale di rete acustica civile anti-dron
 
 ## App online (HTTPS gratuito)
 
-La PWA e' pubblicata automaticamente su GitHub Pages a ogni push su `main`:
+La PWA e' pubblicata su GitHub Pages (dominio custom):
 
-**https://pezzaliapp.github.io/skylisten-real/**
+**https://www.alessandropezzali.it/skylisten-real/**
 
 Aprila dal telefono e installala (Aggiungi a schermata Home). Essendo servita via
 HTTPS, **microfono e GPS funzionano senza configurazioni a pagamento**, risolvendo
 il limite principale dell'uso in locale.
-
-> Per attivare la pubblicazione una sola volta: su GitHub vai in
-> **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-> Da quel momento ogni push su `main` aggiorna il sito.
 
 ## Cosa contiene
 
