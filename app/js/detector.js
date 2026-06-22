@@ -138,23 +138,108 @@ export async function calibrate(log = () => {}) {
   return baseline;
 }
 
+/** Frequenza massima (Hz) mostrata sull'asse verticale del waterfall. */
+const SPEC_MAX_HZ = 8000;
+
+/** True se l'utente preferisce ridurre le animazioni (no scorrimento). */
+const reduceMotion = !!(window.matchMedia &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+let waterfallReady = false;
+
 /**
- * Disegna lo spettro corrente come linea d'onda.
+ * Mappa un'intensità 0..1 su una palette acustica (scuro→blu→ciano→giallo→rosso).
+ * @param {number} v
+ * @returns {[number,number,number]} colore RGB
+ */
+function colormap(v) {
+  const stops = [
+    [0.00, [7, 16, 24]],
+    [0.25, [20, 40, 90]],
+    [0.50, [40, 120, 200]],
+    [0.70, [60, 200, 230]],
+    [0.85, [250, 210, 80]],
+    [1.00, [255, 80, 90]],
+  ];
+  v = Math.max(0, Math.min(1, v));
+  for (let i = 1; i < stops.length; i++) {
+    if (v <= stops[i][0]) {
+      const [t0, c0] = stops[i - 1];
+      const [t1, c1] = stops[i];
+      const f = (v - t0) / (t1 - t0);
+      return [
+        Math.round(c0[0] + (c1[0] - c0[0]) * f),
+        Math.round(c0[1] + (c1[1] - c0[1]) * f),
+        Math.round(c0[2] + (c1[2] - c0[2]) * f),
+      ];
+    }
+  }
+  return stops[stops.length - 1][1];
+}
+
+/** Numero di bin FFT da mostrare fino a SPEC_MAX_HZ. */
+function maxDisplayBin() {
+  const bin = audioCtx.sampleRate / analyser.fftSize;
+  return Math.min(data.length, Math.round(SPEC_MAX_HZ / bin));
+}
+
+/**
+ * Disegna lo spettrogramma a cascata (waterfall): il tempo scorre da destra
+ * verso sinistra, la frequenza è sull'asse verticale (bassi in basso) e il
+ * colore rappresenta l'intensità. È l'artefatto caratteristico del
+ * rilevamento acustico. Con prefers-reduced-motion mostra invece uno
+ * spettro a barre statico, senza scorrimento.
  * @param {HTMLCanvasElement} canvas
  */
 export function drawSpectrum(canvas) {
   if (!data) return;
-  const x = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
-  x.clearRect(0, 0, w, h);
-  x.fillStyle = '#071018';
-  x.fillRect(0, 0, w, h);
-  x.strokeStyle = '#5cc8ff';
-  x.beginPath();
-  for (let i = 0; i < data.length; i++) {
-    const xx = i / data.length * w;
-    const yy = h - data[i] / 255 * h;
-    if (i === 0) x.moveTo(xx, yy); else x.lineTo(xx, yy);
+
+  if (reduceMotion) {
+    drawBars(ctx, w, h);
+    return;
   }
-  x.stroke();
+
+  // Inizializza lo sfondo la prima volta, così non resta area trasparente.
+  if (!waterfallReady) {
+    const bg = colormap(0);
+    ctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
+    ctx.fillRect(0, 0, w, h);
+    waterfallReady = true;
+  }
+
+  // Scorre tutto a sinistra di 1px e disegna la colonna nuova a destra.
+  ctx.drawImage(canvas, -1, 0);
+  const maxBin = maxDisplayBin();
+  const col = ctx.createImageData(1, h);
+  for (let y = 0; y < h; y++) {
+    const frac = 1 - y / h;            // 0 = basso (gravi), 1 = alto (acuti)
+    const bin = Math.min(maxBin - 1, Math.floor(frac * maxBin));
+    const [r, g, b] = colormap(data[bin] / 255);
+    const o = y * 4;
+    col.data[o] = r; col.data[o + 1] = g; col.data[o + 2] = b; col.data[o + 3] = 255;
+  }
+  ctx.putImageData(col, w - 1, 0);
+}
+
+/**
+ * Spettro a barre statico (fallback per prefers-reduced-motion).
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} w
+ * @param {number} h
+ */
+function drawBars(ctx, w, h) {
+  const bg = colormap(0);
+  ctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
+  ctx.fillRect(0, 0, w, h);
+  const maxBin = maxDisplayBin();
+  for (let x = 0; x < w; x++) {
+    const bin = Math.min(maxBin - 1, Math.floor(x / w * maxBin));
+    const v = data[bin] / 255;
+    const [r, g, b] = colormap(v);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    const bh = v * h;
+    ctx.fillRect(x, h - bh, 1, bh);
+  }
 }
