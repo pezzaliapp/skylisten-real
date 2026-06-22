@@ -14,7 +14,7 @@
  *      * altri asset same-origin -> cache-first con aggiornamento in background.
  */
 
-const VERSION = 'v5';
+const VERSION = 'v6';
 const CACHE = `skylisten-${VERSION}`;
 const OFFLINE_URL = 'offline.html';
 
@@ -27,6 +27,8 @@ const CORE_ASSETS = [
   'js/store.js',
   'js/mesh.js',
   'js/detector.js',
+  'js/dsp.js',
+  'js/model.js',
   'manifest.json',
   'icon.svg',
   'icons/icon-192.png',

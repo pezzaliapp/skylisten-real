@@ -19,6 +19,16 @@ let analyser;
 let data;
 /** Baseline del rumore di fondo calcolata in calibrazione. */
 let baseline = null;
+/** Sink opzionale per i campioni audio grezzi (usato dal modello). */
+let audioSink = null;
+
+/**
+ * Registra una funzione che riceve i campioni audio grezzi (per il modello
+ * opzionale). Va impostata prima di start(). @param {(frame:Float32Array, sr:number)=>void} fn
+ */
+export function setAudioSink(fn) {
+  audioSink = fn;
+}
 
 /**
  * @typedef {Object} Features
@@ -55,6 +65,17 @@ export async function start() {
   analyser.smoothingTimeConstant = 0.55;
   src.connect(analyser);
   data = new Uint8Array(analyser.frequencyBinCount);
+
+  // Tap opzionale per i campioni grezzi: attivo solo se il modello è abilitato.
+  if (audioSink) {
+    const cap = audioCtx.createScriptProcessor(4096, 1, 1);
+    src.connect(cap);
+    const mute = audioCtx.createGain();
+    mute.gain.value = 0; // evita il rientro audio dal microfono
+    cap.connect(mute);
+    mute.connect(audioCtx.destination);
+    cap.onaudioprocess = (e) => audioSink(e.inputBuffer.getChannelData(0), audioCtx.sampleRate);
+  }
 }
 
 /**

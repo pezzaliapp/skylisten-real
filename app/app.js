@@ -9,7 +9,11 @@
 
 import * as detector from './js/detector.js';
 import * as mesh from './js/mesh.js';
+import * as model from './js/model.js';
 import { store, setNodeId, setGps, addEvent, exportCsv } from './js/store.js';
+
+/** Peso del modello opzionale nello score combinato (0..1). */
+const MODEL_WEIGHT = 0.5;
 
 /** @param {string} id @returns {HTMLElement} */
 const $ = (id) => document.getElementById(id);
@@ -45,12 +49,20 @@ async function start() {
 /** Loop di rilevamento: estrae feature, calcola score, aggiorna UI e mesh. */
 function loop() {
   const f = detector.extract();
-  const sc = detector.score(f);
+  const heuristic = detector.score(f);
   detector.drawSpectrum($('spec'));
+
+  // Se il modello opzionale è attivo, combina il suo score con l'euristica.
+  let sc = heuristic;
+  const modelProb = model.predict(f);
+  if (modelProb != null) {
+    sc = MODEL_WEIGHT * modelProb + (1 - MODEL_WEIGHT) * heuristic;
+  }
 
   $('score').textContent = sc.toFixed(2);
   $('features').textContent =
-    `centroide ${f.centroid.toFixed(0)} Hz | armoniche ${f.harmonic} | picchi ${f.peaks.map((p) => p[0].toFixed(0)).join(', ')} Hz`;
+    `centroide ${f.centroid.toFixed(0)} Hz | armoniche ${f.harmonic} | picchi ${f.peaks.map((p) => p[0].toFixed(0)).join(', ')} Hz` +
+    (modelProb != null ? ` | modello ${modelProb.toFixed(2)}` : '');
 
   if (sc > parseFloat($('thr').value)) {
     $('status').textContent = 'POSSIBILE DRONE';
@@ -118,3 +130,8 @@ $('beacon').onclick = () => mesh.send({
 $('export').onclick = exportCsv;
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+
+// Modello opzionale: registra il sink audio e prova a caricarlo. Se manca il
+// modello o TensorFlow.js, l'app continua con la sola euristica FFT.
+detector.setAudioSink(model.pushSamples);
+model.init(log);
