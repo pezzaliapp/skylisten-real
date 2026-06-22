@@ -39,12 +39,12 @@ const nodeGlobals = {
 
 export default [
   {
-    files: ['app/app.js', 'app/js/**/*.js'],
+    files: ['app.js', 'js/**/*.js'],
     languageOptions: { ecmaVersion: 2022, sourceType: 'module', globals: browserGlobals },
     rules: { 'no-unused-vars': 'warn', 'no-undef': 'error' },
   },
   {
-    files: ['app/sw.js'],
+    files: ['sw.js'],
     languageOptions: { ecmaVersion: 2022, sourceType: 'script', globals: workerGlobals },
     rules: { 'no-unused-vars': 'warn', 'no-undef': 'error' },
   },

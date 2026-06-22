@@ -4,7 +4,7 @@
  * model.js — aggancio OPZIONALE a un modello TensorFlow.js.
  *
  * Comportamento e vincoli:
- *  - se manca app/model/model.json, o se TensorFlow.js non è stato caricato
+ *  - se manca model/model.json, o se TensorFlow.js non è stato caricato
  *    (window.tf assente), il modulo resta disattivato e l'app usa solo
  *    l'euristica FFT: degrada con grazia, nessun errore;
  *  - non scarica nulla da CDN obbligatorie: TensorFlow.js va aggiunto
@@ -12,7 +12,7 @@
  *  - l'inferenza gira in background (throttled) e restituisce un valore
  *    smussato, così il loop di rilevamento non deve attendere.
  *
- * Vedi app/model/README.md per come abilitarlo. È una funzione sperimentale:
+ * Vedi model/README.md per come abilitarlo. È una funzione sperimentale:
  * il rilevamento serio resta basato su dataset reali e taratura.
  */
 

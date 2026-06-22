@@ -39,17 +39,17 @@ Parametri della pipeline (in `train_drone_classifier.py`): SR 16000, finestra
 ## 3. (Opzionale) Esporta per la PWA
 
 Per far combinare lo score del modello con l'euristica della PWA, converti il
-SavedModel in formato TensorFlow.js dentro `app/model/`:
+SavedModel in formato TensorFlow.js dentro `model/` (radice del repo):
 
 ```bash
 pip install tensorflowjs
 tensorflowjs_converter --input_format=tf_saved_model \
-  training/model_savedmodel app/model
+  training/model_savedmodel model
 ```
 
 L'input atteso lato PWA è un mel-spectrogram `[1, 64, ~63, 1]`, calcolato in
-tempo reale da `app/js/dsp.js` con gli stessi default di librosa. Dettagli e
-formati alternativi in [`app/model/README.md`](../app/model/README.md).
+tempo reale da `js/dsp.js` con gli stessi default di librosa. Dettagli e
+formati alternativi in [`model/README.md`](../model/README.md).
 
 ## Note su Keras 3 / export
 

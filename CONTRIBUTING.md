@@ -18,8 +18,8 @@ zero**: ogni contributo deve mantenerne la natura.
 ## Sviluppo locale
 
 ```bash
-# PWA (file statici)
-python3 -m http.server 8080 --directory app
+# PWA (file statici, dalla radice del repo)
+python3 -m http.server 8080
 
 # Server mesh
 cd server && npm install && npm start

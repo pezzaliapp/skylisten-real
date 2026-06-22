@@ -1,6 +1,6 @@
 node_modules/
 server/node_modules/
-app/model/
-app/vendor/
+model/
+vendor/
 training/.venv/
 *.tflite

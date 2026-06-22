@@ -6,11 +6,11 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "format": "prettier --write \"app/**/*.{js,css,html,json}\" \"server/**/*.js\" \"*.{json,md}\"",
-    "format:check": "prettier --check \"app/**/*.{js,css,html,json}\" \"server/**/*.js\"",
-    "lint": "eslint app server",
-    "icons": "node app/icons/generate-icons.mjs",
-    "serve": "python3 -m http.server 8080 --directory app"
+    "format": "prettier --write \"*.{js,css,html,json,md}\" \"js/**/*.js\" \"server/**/*.js\"",
+    "format:check": "prettier --check \"*.{js,css,html,json}\" \"js/**/*.js\" \"server/**/*.js\"",
+    "lint": "eslint js app.js sw.js server",
+    "icons": "node icons/generate-icons.mjs",
+    "serve": "python3 -m http.server 8080"
   },
   "devDependencies": {
     "eslint": "^9.13.0",

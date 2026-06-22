@@ -1,9 +1,9 @@
 /*
- * Genera le icone PNG della PWA a partire dalla geometria di app/icon.svg,
+ * Genera le icone PNG della PWA a partire dalla geometria di icon.svg,
  * senza dipendenze esterne (usa solo zlib di Node) per restare a costo zero
  * anche su macchine prive di ImageMagick / librerie di rendering.
  *
- * Uso:  node app/icons/generate-icons.mjs
+ * Uso:  node icons/generate-icons.mjs   (oppure: npm run icons)
  *
  * Produce:
  *   icon-192.png            (purpose "any", angoli arrotondati)

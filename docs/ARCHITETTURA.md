@@ -3,14 +3,14 @@
 ## 0. Componenti e flusso
 
 ```
-PWA (app/)  --eventi/feature numeriche-->  Server mesh (server/)  --allarme-->  PWA
+PWA (radice)  --eventi/feature numeriche-->  Server mesh (server/)  --allarme-->  PWA
    |  microfono -> FFT -> feature -> score euristico (+ modello opzionale)
    |  waterfall, GPS, export CSV, service worker offline-first
 ```
 
-- **PWA** (`app/`): pubblicata via HTTPS gratuito su GitHub Pages
-  (`.github/workflows/deploy-pages.yml`), così microfono e GPS funzionano sui
-  telefoni. Codice in moduli ES:
+- **PWA** (radice del repo): pubblicata via HTTPS gratuito su GitHub Pages
+  (Deploy from a branch), così microfono e GPS funzionano sui telefoni.
+  Codice in moduli ES:
   - `js/detector.js` — microfono, FFT, feature, scoring, spettrogramma waterfall
   - `js/mesh.js` — WebSocket, sync clock
   - `js/store.js` — stato nodo, eventi, export CSV
