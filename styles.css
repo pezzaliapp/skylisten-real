@@ -19,6 +19,28 @@ h1 {
   font-size: 22px;
 }
 
+/* Riga d'intestazione: titolo a sinistra, link a destra. */
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.headerlink {
+  font-weight: 700;
+  border: 1px solid #36506d;
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: #182437;
+  text-decoration: none;
+}
+
+.headerlink:hover {
+  border-color: #5cc8ff;
+}
+
 .tagline {
   margin: 4px 0 0;
   color: #9db0c7;
