@@ -1,0 +1,19 @@
+{
+  "name": "skylisten-real",
+  "version": "1.1.0",
+  "description": "Prototipo civile e gratuito di rete acustica per il rilevamento passivo di droni.",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "format": "prettier --write \"app/**/*.{js,css,html,json}\" \"server/**/*.js\" \"*.{json,md}\"",
+    "format:check": "prettier --check \"app/**/*.{js,css,html,json}\" \"server/**/*.js\"",
+    "lint": "eslint app server",
+    "icons": "node app/icons/generate-icons.mjs",
+    "serve": "python3 -m http.server 8080 --directory app"
+  },
+  "devDependencies": {
+    "eslint": "^9.13.0",
+    "prettier": "^3.3.3"
+  }
+}

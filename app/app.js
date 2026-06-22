@@ -30,8 +30,6 @@ nodeIdInput.onchange = () => setNodeId(nodeIdInput.value);
 
 $('thr').oninput = () => { $('thrval').textContent = $('thr').value; };
 
-let raf = 0;
-
 /** Avvia il microfono e il loop di rilevamento. */
 async function start() {
   try {
@@ -77,7 +75,7 @@ function loop() {
     $('status').className = 'big ok';
   }
 
-  raf = requestAnimationFrame(loop);
+  requestAnimationFrame(loop);
 }
 
 /** Avvia la calibrazione del rumore di fondo. */

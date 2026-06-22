@@ -93,7 +93,7 @@ async function networkFirst(request) {
     const response = await fetch(request);
     cache.put(request, response.clone());
     return response;
-  } catch (err) {
+  } catch {
     const cached = await cache.match(request) || await cache.match('index.html');
     return cached || cache.match(OFFLINE_URL);
   }
@@ -113,7 +113,7 @@ async function cacheFirst(request) {
     const response = await fetch(request);
     if (response.ok) cache.put(request, response.clone());
     return response;
-  } catch (err) {
+  } catch {
     return cache.match(OFFLINE_URL);
   }
 }

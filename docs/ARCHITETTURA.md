@@ -1,5 +1,25 @@
 # Architettura SkyListen Real
 
+## 0. Componenti e flusso
+
+```
+PWA (app/)  --eventi/feature numeriche-->  Server mesh (server/)  --allarme-->  PWA
+   |  microfono -> FFT -> feature -> score euristico (+ modello opzionale)
+   |  waterfall, GPS, export CSV, service worker offline-first
+```
+
+- **PWA** (`app/`): pubblicata via HTTPS gratuito su GitHub Pages
+  (`.github/workflows/deploy-pages.yml`), così microfono e GPS funzionano sui
+  telefoni. Codice in moduli ES:
+  - `js/detector.js` — microfono, FFT, feature, scoring, spettrogramma waterfall
+  - `js/mesh.js` — WebSocket, sync clock
+  - `js/store.js` — stato nodo, eventi, export CSV
+  - `js/dsp.js` + `js/model.js` — log-mel e modello TensorFlow.js **opzionale**
+  - `app.js` — wiring UI e loop di rilevamento
+- **Server** (`server/`): mesh WebSocket che valuta le conferme multi-nodo e
+  stima la zona. Riceve solo dati numerici, mai audio grezzo.
+- **Privacy**: niente upload di audio; si trasmettono solo eventi/feature.
+
 ## 1. Dataset audio
 
 Fonti gratuite consigliate:
