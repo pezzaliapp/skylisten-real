@@ -123,6 +123,7 @@ function rateLimited(state) {
 
 wss.on('connection', (ws, req) => {
   let id = 'unknown';
+  let role = 'sensor'; // diventa 'viewer' per i consumatori di sola lettura
   const rate = { windowStart: Date.now(), count: 0 };
   ws.isAlive = true;
   ws.on('pong', () => { ws.isAlive = true; });
@@ -143,7 +144,17 @@ wss.on('connection', (ws, req) => {
     if (!m || typeof m !== 'object') return;
 
     try {
-      id = (typeof m.node === 'string' && m.node) ? m.node : id;
+      if (m.role === 'viewer') role = 'viewer';
+      if (typeof m.node === 'string' && m.node) id = m.node;
+
+      // I viewer (es. la mappa) sono consumatori di sola lettura: ricevono i
+      // broadcast ma NON vengono registrati come nodi-sensore e non possono
+      // collidere con l'id di un sensore né chiuderne la connessione.
+      if (role === 'viewer') {
+        if (m.kind === 'sync') sendTo(ws, { kind: 'sync_reply', serverTs: Date.now() });
+        return;
+      }
+
       clients.set(id, { ws, gps: m.gps, last: Date.now() });
 
       if (m.kind === 'sync') {
@@ -163,8 +174,12 @@ wss.on('connection', (ws, req) => {
   });
 
   ws.on('close', () => {
-    clients.delete(id);
-    log('info', 'client disconnesso', { id });
+    // Rimuovi dalla mappa sensori solo se questa connessione è ancora quella
+    // registrata per l'id: evita che una connessione duplicata/obsoleta
+    // cancelli l'entry di un sensore ancora vivo.
+    const entry = clients.get(id);
+    if (entry && entry.ws === ws) clients.delete(id);
+    log('info', 'client disconnesso', { id, role });
   });
 
   ws.on('error', (err) => log('warn', 'errore socket', { id, error: String(err) }));

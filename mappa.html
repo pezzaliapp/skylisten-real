@@ -157,12 +157,14 @@
       }
 
       $('connect').onclick = () => {
+        // La mappa è un consumatore di sola lettura: si connette come "viewer"
+        // con un id separato, così non collide con i nodi-sensore né li chiude.
         mesh.connect($('wsurl').value, {
           onStatus: (t) => { $('status').textContent = t; },
           onLog: () => {},
           onEvent: upsertNode,
           onAlarm: handleAlarm,
-        });
+        }, { role: 'viewer' });
       };
 
       refreshEmpty();

@@ -18,6 +18,14 @@ let ws = null;
 let clockOffset = 0;
 
 /**
+ * Identità di questa connessione. I "sensore" usano l'id del nodo (store);
+ * i "viewer" (es. la mappa, sola lettura) hanno un id separato e non vanno
+ * registrati come nodi-sensore lato server.
+ * @type {{ role: ('sensor'|'viewer'), node: (string|null) }}
+ */
+let identity = { role: 'sensor', node: null };
+
+/**
  * Timestamp corrente corretto con l'offset del server.
  * @returns {number} millisecondi epoch sincronizzati
  */
@@ -37,8 +45,16 @@ export function now() {
  * Apre la connessione WebSocket verso la mesh.
  * @param {string} url  es. "ws://192.168.1.10:8787"
  * @param {MeshCallbacks} [cb]
+ * @param {{ role?: ('sensor'|'viewer'), nodeId?: string }} [opts]
+ *   role 'viewer' per i consumatori di sola lettura (es. la mappa): ricevono
+ *   gli aggiornamenti ma non si registrano come nodi-sensore.
  */
-export function connect(url, cb = {}) {
+export function connect(url, cb = {}, opts = {}) {
+  identity.role = opts.role === 'viewer' ? 'viewer' : 'sensor';
+  identity.node = opts.nodeId ||
+    (identity.role === 'viewer'
+      ? 'VIEWER-' + Math.random().toString(36).slice(2, 7).toUpperCase()
+      : null); // null => usa l'id del nodo dallo store
   ws = new WebSocket(url);
 
   ws.onopen = () => {
@@ -79,7 +95,8 @@ export function send(payload) {
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({
       ...payload,
-      node: store.nodeId,
+      node: identity.node || store.nodeId,
+      role: identity.role,
       clientTs: Date.now(),
       gps: store.gps,
     }));
