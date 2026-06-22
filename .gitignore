@@ -1,0 +1,23 @@
+# Dipendenze
+node_modules/
+server/node_modules/
+
+# Python / training
+training/.venv/
+training/model_savedmodel/
+training/*.tflite
+__pycache__/
+*.pyc
+
+# Dataset audio (pesanti, l'utente li aggiunge in locale)
+datasets/drone/*
+datasets/no_drone/*
+!datasets/drone/.gitkeep
+!datasets/no_drone/.gitkeep
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
