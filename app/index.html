@@ -1,8 +1,96 @@
-<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0f14"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png"><link rel="apple-touch-icon" href="icons/icon-192.png"><link rel="stylesheet" href="styles.css"><title>SkyListen Real</title></head><body><header><b>SkyListen Real</b> — rete acustica civile per rilevamento compatibile drone</header><main>
-<div class="grid">
-<section class="card"><h2>Sensore locale</h2><div id="status" class="big warn">FERMO</div><p class="small">Rilevamento con FFT + modello opzionale TensorFlow.js/TFLite convertito.</p><div class="row"><button id="start">Avvia microfono</button><button id="calib">Calibra fondo 20s</button><button id="export">Export CSV</button></div><p>Score drone: <b id="score">0.00</b> | Soglia <input id="thr" type="range" min="0.1" max="0.95" step="0.01" value="0.62"> <span id="thrval">0.62</span></p><canvas id="spec" width="900" height="250"></canvas><div id="features" class="small"></div></section>
-<section class="card"><h2>Nodo & posizione</h2><label>ID nodo</label><input id="nodeId"><div class="row"><button id="geo">Attiva GPS</button><button id="beacon">Invia beacon test</button></div><div id="pos" class="small">GPS non attivo</div><div><span class="pill">Serve HTTPS o localhost</span><span class="pill">Audio non inviato</span></div></section>
-<section class="card"><h2>Mesh WebSocket</h2><p class="small">Per funzionare davvero tra telefoni usa il server incluso su un PC/Raspberry nella stessa rete.</p><label>Server WS</label><input id="wsurl" value="ws://192.168.1.10:8787"><div class="row"><button id="connect">Connetti</button><button id="sync">Sync clock</button></div><div id="mesh" class="small">Non connesso</div></section>
-<section class="card"><h2>Allarme multi-nodo</h2><div id="alarm" class="big ok">NESSUNO</div><p>Conferme ultimi 8s: <b id="confirm">0</b></p><p class="small">Se almeno 3 nodi confermano, il server stima zona con pesi su intensità/score e prepara dati TDOA quando i timestamp sono abbastanza affidabili.</p><div id="estimate" class="small"></div></section>
-</div><section class="card"><h2>Log eventi</h2><div id="log" class="log"></div></section>
-</main><script type="module" src="app.js"></script></body></html>
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b0f14">
+  <meta name="description" content="Rete acustica civile e gratuita per il rilevamento passivo di droni.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>SkyListen Real</title>
+</head>
+<body>
+  <a class="skip-link" href="#main">Salta al contenuto</a>
+
+  <header>
+    <h1>SkyListen Real</h1>
+    <p class="tagline">Rete acustica civile per il rilevamento passivo compatibile con droni</p>
+  </header>
+
+  <main id="main">
+    <div class="grid">
+
+      <section class="card" aria-labelledby="h-sensore">
+        <h2 id="h-sensore">Sensore locale</h2>
+        <p id="status" class="big warn" role="status" aria-live="polite" aria-label="Stato del sensore">FERMO</p>
+        <p class="small">Rilevamento con FFT e modello opzionale TensorFlow.js/TFLite convertito.</p>
+        <div class="row">
+          <button id="start" type="button">Avvia microfono</button>
+          <button id="calib" type="button">Calibra fondo 20s</button>
+          <button id="export" type="button">Esporta CSV</button>
+        </div>
+        <p>
+          Score drone: <b id="score" aria-live="off">0.00</b>
+          <label for="thr">Soglia</label>
+          <input id="thr" type="range" min="0.1" max="0.95" step="0.01" value="0.62"
+                 aria-describedby="thrval">
+          <output id="thrval" for="thr">0.62</output>
+        </p>
+        <canvas id="spec" width="900" height="250"
+                role="img" aria-label="Spettrogramma a cascata dell'audio ambientale"></canvas>
+        <p id="features" class="small" aria-live="off"></p>
+      </section>
+
+      <section class="card" aria-labelledby="h-nodo">
+        <h2 id="h-nodo">Nodo e posizione</h2>
+        <p>
+          <label for="nodeId">ID nodo</label>
+          <input id="nodeId" type="text" autocomplete="off">
+        </p>
+        <div class="row">
+          <button id="geo" type="button">Attiva GPS</button>
+          <button id="beacon" type="button">Invia beacon di test</button>
+        </div>
+        <p id="pos" class="small" aria-live="polite">GPS non attivo</p>
+        <p>
+          <span class="pill">Serve HTTPS o localhost</span>
+          <span class="pill">Audio non inviato</span>
+        </p>
+      </section>
+
+      <section class="card" aria-labelledby="h-mesh">
+        <h2 id="h-mesh">Mesh WebSocket</h2>
+        <p class="small">Per funzionare davvero fra telefoni, avvia il server incluso su un PC o Raspberry nella stessa rete.</p>
+        <p>
+          <label for="wsurl">Server WS</label>
+          <input id="wsurl" type="text" inputmode="url" autocomplete="off" value="ws://192.168.1.10:8787">
+        </p>
+        <div class="row">
+          <button id="connect" type="button">Connetti</button>
+          <button id="sync" type="button">Sincronizza clock</button>
+        </div>
+        <p id="mesh" class="small" aria-live="polite">Non connesso</p>
+      </section>
+
+      <section class="card" aria-labelledby="h-allarme">
+        <h2 id="h-allarme">Allarme multi-nodo</h2>
+        <p id="alarm" class="big ok" role="alert" aria-live="assertive" aria-label="Stato allarme">NESSUNO</p>
+        <p>Conferme negli ultimi 8s: <b id="confirm">0</b></p>
+        <p class="small">Se almeno 3 nodi confermano insieme, il server stima la zona pesando intensità e score, e prepara i dati TDOA quando i timestamp sono abbastanza affidabili.</p>
+        <p id="estimate" class="small" aria-live="polite"></p>
+      </section>
+
+    </div>
+
+    <section class="card" aria-labelledby="h-log">
+      <h2 id="h-log">Log eventi</h2>
+      <div id="log" class="log" role="log" aria-live="polite" aria-label="Cronologia eventi"></div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

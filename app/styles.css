@@ -11,7 +11,47 @@ body {
 header {
   padding: 18px;
   background: #101722;
-  border-bottom: 1px solid #223;
+  border-bottom: 1px solid #2b3a4f;
+}
+
+h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.tagline {
+  margin: 4px 0 0;
+  color: #9db0c7;
+  font-size: 13px;
+}
+
+/* Link "salta al contenuto": visibile solo quando riceve il focus da tastiera. */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  z-index: 10;
+  background: #182437;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 0 0 10px 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/* Etichette dei form ben separate dai controlli. */
+label {
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 13px;
+  color: #c4d4e8;
+}
+
+output {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 
 main {
@@ -48,6 +88,16 @@ select {
 button {
   cursor: pointer;
   font-weight: 700;
+}
+
+/* Focus visibile e coerente per la navigazione da tastiera. */
+:focus-visible {
+  outline: 3px solid #5cc8ff;
+  outline-offset: 2px;
+}
+
+button:hover {
+  border-color: #5cc8ff;
 }
 
 .big {
@@ -108,3 +158,25 @@ textarea {
 }
 
 a { color: #8cc8ff; }
+
+/* Su schermi stretti i controlli vanno a piena larghezza per essere toccabili. */
+@media (max-width: 480px) {
+  header { padding: 14px; }
+  main { padding: 12px; }
+  .big { font-size: 32px; }
+  .row { gap: 10px; }
+  .row button { flex: 1 1 auto; min-height: 44px; }
+  input[type="text"] { width: 100%; box-sizing: border-box; }
+}
+
+/* Rispetta la preferenza di movimento ridotto: niente animazioni/transizioni. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
