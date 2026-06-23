@@ -14,7 +14,7 @@
  *      * altri asset same-origin -> cache-first con aggiornamento in background.
  */
 
-const VERSION = 'v12';
+const VERSION = 'v13';
 const CACHE = `skylisten-${VERSION}`;
 const OFFLINE_URL = 'offline.html';
 
@@ -24,6 +24,8 @@ const CORE_ASSETS = [
   'index.html',
   'manuale.html',
   'mappa.html',
+  'lora.html',
+  'docs/HARDWARE-LORA.md',
   'styles.css',
   'app.js',
   'js/store.js',
@@ -32,6 +34,7 @@ const CORE_ASSETS = [
   'js/dsp.js',
   'js/model.js',
   'js/lorasim.js',
+  'js/mdview.js',
   'shared/transport.js',
   'shared/evaluate.js',
   'manifest.json',

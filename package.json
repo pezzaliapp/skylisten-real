@@ -11,6 +11,7 @@
     "lint": "eslint js app.js sw.js server shared bridge",
     "test:mesh": "node test/two-clients.mjs",
     "test:bridge": "node test/bridge-mock.mjs",
+    "test:links": "node test/discoverability.mjs",
     "icons": "node icons/generate-icons.mjs",
     "serve": "python3 -m http.server 8080"
   },

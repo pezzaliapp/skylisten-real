@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b0f14">
+  <meta name="description" content="Manuale e piano d'emergenza della rete radio LoRa di SkyListen Real.">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>Rete LoRa — SkyListen Real</title>
+  <style>
+    /* Stessa resa del manuale (coerente con styles.css). */
+    .manual { max-width: 820px; }
+    .manual h2 { margin-top: 22px; font-size: 24px; }
+    .manual h3 { margin: 22px 0 6px; font-size: 18px; color: #cfe0f5; }
+    .manual p, .manual li { line-height: 1.6; }
+    .manual ul, .manual ol { padding-left: 20px; }
+    .manual code {
+      font-family: ui-monospace, Menlo, monospace; font-size: 0.9em;
+      background: #08111d; border: 1px solid #26384f; border-radius: 6px; padding: 1px 6px;
+    }
+    .manual pre {
+      background: #08111d; border: 1px solid #26384f; border-radius: 12px; padding: 12px; overflow: auto;
+    }
+    .manual pre code { background: none; border: 0; padding: 0; }
+    .manual table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+    .manual th, .manual td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #26384f; vertical-align: top; }
+    .manual th { color: #cfe0f5; background: #0d1521; }
+    .manual blockquote {
+      margin: 14px 0; padding: 10px 14px; border-left: 3px solid #5cc8ff;
+      background: #0d1521; border-radius: 0 10px 10px 0; color: #c4d4e8;
+    }
+    .manual blockquote h2 { margin-top: 0; font-size: 20px; color: #ffe9a8; }
+    .header-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .backlink { font-weight: 700; }
+    .source-note { color: #9db0c7; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Salta al contenuto</a>
+
+  <header>
+    <div class="header-row">
+      <h1>Rete LoRa — SkyListen Real</h1>
+      <nav class="headernav">
+        <a class="headerlink" href="index.html">← App</a>
+        <a class="headerlink" href="mappa.html?lora-sim=1" target="_blank" rel="noopener">Demo ↗</a>
+        <a class="headerlink" href="manuale.html">Manuale</a>
+      </nav>
+    </div>
+    <p class="tagline">Manuale e piano d'emergenza della futura rete radio (off-grid)</p>
+  </header>
+
+  <main id="main" class="manual">
+    <section class="card">
+      <p class="source-note">
+        Pagina generata dalla fonte unica <code>docs/HARDWARE-LORA.md</code>
+        (nessuna versione divergente). Vuoi provare? Apri la
+        <a href="mappa.html?lora-sim=1" target="_blank" rel="noopener">demo simulata</a>.
+      </p>
+      <div id="doc" aria-live="polite">Caricamento del manuale…</div>
+    </section>
+    <p><a class="backlink" href="index.html">← Torna all'app</a></p>
+  </main>
+
+  <script type="module">
+    import { renderMarkdown } from './js/mdview.js';
+    const doc = document.getElementById('doc');
+    try {
+      const res = await fetch('docs/HARDWARE-LORA.md', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      doc.innerHTML = renderMarkdown(await res.text());
+    } catch (err) {
+      // Fallback grazioso (es. primo avvio offline senza cache).
+      doc.innerHTML =
+        '<p>Impossibile caricare il manuale ora. Apri direttamente il file: ' +
+        '<a href="docs/HARDWARE-LORA.md">docs/HARDWARE-LORA.md</a>.</p>';
+    }
+  </script>
+</body>
+</html>

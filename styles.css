@@ -47,6 +47,23 @@ h1 {
   border-color: #5cc8ff;
 }
 
+/* Link con aspetto di pulsante (usato per le azioni nelle card). */
+.btnlink {
+  display: inline-block;
+  border-radius: 10px;
+  border: 1px solid #36506d;
+  background: #182437;
+  color: #fff;
+  padding: 10px;
+  margin: 4px 0;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.btnlink:hover {
+  border-color: #5cc8ff;
+}
+
 .tagline {
   margin: 4px 0 0;
   color: #9db0c7;
