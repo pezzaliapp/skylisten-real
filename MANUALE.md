@@ -130,12 +130,13 @@ npm install
 npm start
 ```
 
-Il server ascolta su `ws://0.0.0.0:8787`. Variabili d'ambiente principali:
+Il server ascolta in dual-stack (IPv4 + IPv6) sulla porta `8787`; in locale usa
+`ws://localhost:8787`. Variabili d'ambiente principali:
 
 | Variabile | Default | Significato |
 | --- | --- | --- |
 | `PORT` | `8787` | Porta di ascolto |
-| `HOST` | `0.0.0.0` | Indirizzo di bind |
+| `HOST` | `::` | Indirizzo di bind (dual-stack IPv4 + IPv6) |
 | `MAX_PAYLOAD` | `65536` | Dimensione massima messaggio (byte) |
 | `MAX_MSG_RATE` | `50` | Messaggi al secondo per client |
 

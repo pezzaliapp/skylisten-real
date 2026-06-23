@@ -209,12 +209,12 @@
       <pre><code>cd server
 npm install
 npm start</code></pre>
-      <p>Il server ascolta su <code>ws://0.0.0.0:8787</code>. Variabili d'ambiente principali:</p>
+      <p>Il server ascolta in dual-stack (IPv4 + IPv6) sulla porta <code>8787</code>; in locale usa <code>ws://localhost:8787</code>. Variabili d'ambiente principali:</p>
       <table>
         <thead><tr><th>Variabile</th><th>Default</th><th>Significato</th></tr></thead>
         <tbody>
           <tr><td><code>PORT</code></td><td><code>8787</code></td><td>Porta di ascolto</td></tr>
-          <tr><td><code>HOST</code></td><td><code>0.0.0.0</code></td><td>Indirizzo di bind</td></tr>
+          <tr><td><code>HOST</code></td><td><code>::</code></td><td>Indirizzo di bind (dual-stack IPv4 + IPv6)</td></tr>
           <tr><td><code>MAX_PAYLOAD</code></td><td><code>65536</code></td><td>Dimensione massima messaggio (byte)</td></tr>
           <tr><td><code>MAX_MSG_RATE</code></td><td><code>50</code></td><td>Messaggi al secondo per client</td></tr>
         </tbody>

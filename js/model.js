@@ -49,17 +49,17 @@ export function lastProbability() {
  * @returns {Promise<boolean>} true se attivato
  */
 export async function init(log = () => {}) {
-  // 1) il file del modello esiste?
+  // 1) TensorFlow.js disponibile? Si controlla PRIMA di toccare la rete: senza
+  //    TF.js il modello non è comunque utilizzabile, e così si evita una fetch
+  //    a model/model.json (di norma assente) che lascerebbe un 404 in console.
+  tf = (typeof window !== 'undefined') ? window.tf : null;
+  if (!tf) return false; // nessun TF.js: euristica pura, in silenzio
+
+  // 2) il file del modello esiste?
   try {
     const res = await fetch(MODEL_URL, { method: 'GET', cache: 'no-store' });
     if (!res.ok) return false; // nessun modello: silenzioso
   } catch {
-    return false;
-  }
-  // 2) TensorFlow.js disponibile?
-  tf = (typeof window !== 'undefined') ? window.tf : null;
-  if (!tf) {
-    log('Modello presente ma TensorFlow.js non caricato: uso solo euristica. Vedi model/README.md');
     return false;
   }
   // 3) carica il modello (Layers, con fallback a Graph).

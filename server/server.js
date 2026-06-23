@@ -9,7 +9,7 @@
  *
  * Configurazione via variabili d'ambiente:
  *   PORT          porta di ascolto              (default 8787)
- *   HOST          indirizzo di bind             (default 0.0.0.0)
+ *   HOST          indirizzo di bind             (default '::' dual-stack)
  *   MAX_PAYLOAD   dimensione max messaggio (B)  (default 65536)
  *   MAX_MSG_RATE  messaggi/sec per client       (default 50)
  */
@@ -17,7 +17,10 @@
 import { WebSocketServer } from 'ws';
 
 const PORT = Number(process.env.PORT) || 8787;
-const HOST = process.env.HOST || '0.0.0.0';
+// Default '::' = dual-stack (IPv4 + IPv6): così "ws://localhost" funziona sia
+// che il browser risolva localhost in 127.0.0.1 sia in ::1. Con HOST=0.0.0.0
+// (solo IPv4) i browser che preferiscono ::1 non si connettono a localhost.
+const HOST = process.env.HOST || '::';
 const MAX_PAYLOAD = Number(process.env.MAX_PAYLOAD) || 64 * 1024;
 const MAX_MSG_RATE = Number(process.env.MAX_MSG_RATE) || 50;
 

@@ -18,17 +18,25 @@ npm install
 npm start
 ```
 
-Il server ascolta su `ws://0.0.0.0:8787`. Dai telefoni, nella PWA, imposta
-`Server WS` su `ws://IP_DEL_PC:8787`.
+Il server ascolta in dual-stack (IPv4 + IPv6) sulla porta `8787`. In locale usa
+`ws://localhost:8787`; dai telefoni, nella PWA, imposta `Server WS` su
+`ws://IP_DEL_PC:8787`.
 
 ## Configurazione (variabili d'ambiente)
 
 | Variabile      | Default   | Descrizione                          |
 | -------------- | --------- | ------------------------------------ |
-| `PORT`         | `8787`    | Porta di ascolto                     |
-| `HOST`         | `0.0.0.0` | Indirizzo di bind                    |
-| `MAX_PAYLOAD`  | `65536`   | Dimensione massima messaggio (byte)  |
-| `MAX_MSG_RATE` | `50`      | Messaggi al secondo per client       |
+| Variabile      | Default | Descrizione                                   |
+| -------------- | ------- | --------------------------------------------- |
+| `PORT`         | `8787`  | Porta di ascolto                              |
+| `HOST`         | `::`    | Indirizzo di bind (dual-stack IPv4 + IPv6)    |
+| `MAX_PAYLOAD`  | `65536` | Dimensione massima messaggio (byte)           |
+| `MAX_MSG_RATE` | `50`    | Messaggi al secondo per client                |
+
+> Il bind di default è `::` (dual-stack): così `ws://localhost:8787` funziona
+> sia che il browser risolva `localhost` in `127.0.0.1` (IPv4) sia in `::1`
+> (IPv6). Con `HOST=0.0.0.0` (solo IPv4) alcuni browser non si connettono a
+> `localhost`. Per forzare solo IPv4 usa `HOST=0.0.0.0`.
 
 Esempio:
 
