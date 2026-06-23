@@ -187,6 +187,17 @@ textarea {
 
 a { color: #8cc8ff; }
 
+/* Banner della demo "rete LoRa" (simulazione): segnala dati finti. */
+.sim-banner {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-left: 3px solid #ffd166;
+  background: #241f0c;
+  color: #ffe9a8;
+  border-radius: 0 10px 10px 0;
+  font-weight: 600;
+}
+
 /* Su schermi stretti i controlli vanno a piena larghezza per essere toccabili. */
 @media (max-width: 480px) {
   header { padding: 14px; }

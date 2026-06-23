@@ -13,9 +13,20 @@ const browserGlobals = {
   cancelAnimationFrame: 'readonly',
   setTimeout: 'readonly',
   clearTimeout: 'readonly',
+  setInterval: 'readonly',
+  clearInterval: 'readonly',
   Blob: 'readonly',
   URL: 'readonly',
   alert: 'readonly',
+  console: 'readonly',
+};
+
+// shared/ è runtime-agnostico (browser + Node): solo timer e console.
+const sharedGlobals = {
+  setInterval: 'readonly',
+  clearInterval: 'readonly',
+  setTimeout: 'readonly',
+  clearTimeout: 'readonly',
   console: 'readonly',
 };
 
@@ -50,6 +61,16 @@ export default [
   },
   {
     files: ['server/**/*.js'],
+    languageOptions: { ecmaVersion: 2022, sourceType: 'module', globals: nodeGlobals },
+    rules: { 'no-unused-vars': 'warn', 'no-undef': 'error' },
+  },
+  {
+    files: ['shared/**/*.js'],
+    languageOptions: { ecmaVersion: 2022, sourceType: 'module', globals: sharedGlobals },
+    rules: { 'no-unused-vars': 'warn', 'no-undef': 'error' },
+  },
+  {
+    files: ['bridge/**/*.js'],
     languageOptions: { ecmaVersion: 2022, sourceType: 'module', globals: nodeGlobals },
     rules: { 'no-unused-vars': 'warn', 'no-undef': 'error' },
   },

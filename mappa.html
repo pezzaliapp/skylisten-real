@@ -68,6 +68,20 @@
       </div>
     </section>
 
+    <section class="card" aria-labelledby="h-sim">
+      <h2 id="h-sim" style="margin:0 0 6px;font-size:18px">Demo rete LoRa (simulazione)</h2>
+      <p class="small">
+        Anteprima della <b>futura</b> rete radio LoRa/off-grid: nodi radio
+        <b>simulati</b>, senza hardware né Internet. È una cosa diversa dalla
+        mesh WebSocket reale qui sopra (questa non apre alcuna connessione).
+      </p>
+      <button id="simToggle" type="button">Avvia simulazione LoRa</button>
+    </section>
+
+    <p id="simBanner" class="sim-banner" hidden aria-live="polite">
+      🟡 SIMULAZIONE rete LoRa attiva — dati finti, nessun hardware reale.
+    </p>
+
     <section class="card">
       <div id="map" role="application" aria-label="Mappa dei rilevamenti"></div>
       <p id="emptyMsg" class="empty-msg">Nessun nodo posizionato.</p>
@@ -78,6 +92,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script type="module">
     import * as mesh from './js/mesh.js';
+    import * as lorasim from './js/lorasim.js';
 
     const $ = (id) => document.getElementById(id);
     const DEFAULT_VIEW = [44.5, 11.35]; // vista di default (centro Italia)
@@ -118,22 +133,27 @@
         return Number.isFinite(n) ? new Date(n).toLocaleTimeString() : '—';
       }
 
-      // Aggiunge/aggiorna il marker di un nodo posizionato.
-      function upsertNode({ node, score, ts, gps }) {
+      // Aggiunge/aggiorna il marker di un nodo posizionato. I nodi della
+      // simulazione LoRa (source 'lora-sim') sono marcati visivamente (tratteggio
+      // + etichetta) per distinguerli dai nodi reali.
+      function upsertNode({ node, score, ts, gps, source }) {
         if (!gps || gps.lat == null || gps.lon == null) return;
         const s = Math.max(0, Math.min(1, Number(score) || 0));
         const radius = 6 + s * 14;
         const color = colorFor(s);
-        const popup = `<b>${node || 'nodo'}</b><br>score ${s.toFixed(2)}<br>${fmtTime(ts)}`;
+        const sim = source === 'lora-sim';
+        const dashArray = sim ? '4 3' : null;
+        const popup = `<b>${sim ? '📡 ' : ''}${node || 'nodo'}</b>${sim ? ' <i>(simulato)</i>' : ''}` +
+          `<br>score ${s.toFixed(2)}<br>${fmtTime(ts)}`;
         let m = markers.get(node);
         if (m) {
           m.setLatLng([gps.lat, gps.lon]);
-          m.setStyle({ color, fillColor: color });
+          m.setStyle({ color, fillColor: color, dashArray });
           m.setRadius(radius);
           m.getPopup() ? m.setPopupContent(popup) : m.bindPopup(popup);
         } else {
           m = L.circleMarker([gps.lat, gps.lon], {
-            radius, color, fillColor: color, fillOpacity: 0.6, weight: 2,
+            radius, color, fillColor: color, fillOpacity: sim ? 0.35 : 0.6, weight: 2, dashArray,
           }).addTo(map).bindPopup(popup);
           markers.set(node, m);
         }
@@ -170,7 +190,24 @@
       }
       $('connect').onclick = doConnect;
 
-      const isDemo = /(?:[?&]demo=1|#demo)/.test(location.search + location.hash);
+      // --- Demo "rete LoRa" (simulazione): riusa mappa e logica, niente rete ---
+      function setSimUI(active) {
+        $('simToggle').textContent = active ? 'Ferma simulazione LoRa' : 'Avvia simulazione LoRa';
+        $('simBanner').hidden = !active;
+      }
+      function startSim() {
+        lorasim.start({ onEvent: upsertNode, onAlarm: handleAlarm, onStatus: () => {} });
+        setSimUI(true);
+      }
+      function stopSim() {
+        lorasim.stop();
+        setSimUI(false);
+      }
+      $('simToggle').onclick = () => (lorasim.isRunning() ? stopSim() : startSim());
+
+      // ?demo=1 / ?lora-sim=1 (o #demo / #lora-sim) avvia la simulazione LoRa.
+      const isDemo = /(?:[?&](?:demo=1|lora-sim=1))|(?:#(?:demo|lora-sim))/
+        .test(location.search + location.hash);
 
       // URL condiviso con l'app + connessione automatica: aprendo la mappa in
       // una nuova scheda si collega da sola, senza chiudere la connessione
@@ -182,21 +219,7 @@
 
       refreshEmpty();
 
-      // Modalità demo (?demo=1 oppure #demo): inietta dati di test senza server.
-      if (isDemo) {
-        $('status').textContent = 'Modalità demo (dati di test)';
-        const base = [
-          { node: 'NODO-A', score: 0.35, ts: Date.now(), gps: { lat: 44.49, lon: 11.34 } },
-          { node: 'NODO-B', score: 0.62, ts: Date.now(), gps: { lat: 44.51, lon: 11.36 } },
-          { node: 'NODO-C', score: 0.88, ts: Date.now(), gps: { lat: 44.50, lon: 11.33 } },
-        ];
-        base.forEach(upsertNode);
-        handleAlarm({
-          kind: 'alarm', level: 'CONFERMATO', count: 3,
-          estimate: { method: 'weighted-centroid-preTDOA', lat: 44.50, lon: 11.343, radius_m: 1500 },
-          events: base,
-        });
-      }
+      if (isDemo) startSim();
     }
   </script>
 </body>

@@ -28,6 +28,21 @@ home del sito). Gli altri componenti stanno nelle rispettive cartelle:
 - `docs/ARCHITETTURA.md` schema operativo.
 - `model/` modello TensorFlow.js **opzionale**: se presente, il suo score viene
   combinato con l'euristica FFT. Vedi [`model/README.md`](model/README.md).
+- `shared/` codice condiviso fra PWA e bridge: contratto `transport` + simulatore
+  LoRa + valutazione allarme.
+- `bridge/` ponte **archiviato** fra una rete radio LoRa reale e la mesh: si
+  scarica e si avvia solo quando si collega l'hardware. Vedi
+  [`bridge/README.md`](bridge/README.md) e
+  [`docs/HARDWARE-LORA.md`](docs/HARDWARE-LORA.md).
+
+## Demo "rete LoRa" (simulazione, costo zero)
+
+La mappa include una **demo simulata** della futura rete radio LoRa/off-grid:
+nodi radio finti, conferma multi-nodo e zona stimata, **senza hardware né
+Internet**. Aprila da `mappa.html` (pulsante "Avvia simulazione LoRa") oppure con
+`mappa.html?lora-sim=1`. È chiaramente etichettata ed è distinta dalla mesh
+WebSocket reale. La stessa simulazione alimenta il bridge in modalità mock, così
+è un'anteprima fedele di ciò che farà l'hardware.
 
 ## Struttura della PWA
 

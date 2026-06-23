@@ -1,0 +1,6 @@
+{
+  "meshUrl": "ws://localhost:8787",
+  "roomKey": "",
+  "mode": "mock",
+  "serial": { "port": "/dev/ttyUSB0", "baud": 115200 }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "skylisten-bridge",
+  "version": "0.1.0",
+  "description": "Bridge (archivio) fra un modulo radio LoRa reale e la mesh WebSocket di SkyListen. Si avvia solo quando si scarica e si collega l'hardware.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node bridge.js",
+    "test": "node ../test/bridge-mock.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
