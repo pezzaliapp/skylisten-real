@@ -86,46 +86,107 @@ hardware una tantum. Restano a costo zero la PWA, il mesh server e il bridge.
 
 ---
 
-## 6. Procedura di attivazione futura (passo per passo)
+## 6. Piano di attivazione operativa
 
-Da eseguire **solo quando** prelevi il bridge e colleghi l'hardware.
+> ## ⚠️ Leggi prima questo — cosa è e cosa NON è
+>
+> - È un **layer di rilevamento acustico di prossimità**: segnala "da più punti
+>   si sente qualcosa di compatibile con un drone". Niente di più.
+> - **NON è un sistema di difesa.** Non intercetta, non abbatte, non disturba e
+>   non respinge nulla. È solo ascolto passivo.
+> - **NON localizza con precisione.** La "zona stimata" è un centroide pesato:
+>   un'indicazione di massima, non una posizione.
+> - **NON funziona se l'hardware non è già installato, alimentato e testato
+>   PRIMA.** Non è improvvisabile nel momento critico: la rete che non hai
+>   preparato in anticipo, nell'emergenza non esiste.
+> - **NON garantisce copertura né continuità.** Portata, banda e duty cycle di
+>   LoRa sono limitati (vedi §4); nodi e batterie possono mancare proprio quando
+>   servono.
+>
+> In sintesi: dà **consapevolezza situazionale di prossimità**, a chi l'ha
+> preparata in anticipo. Non promette protezione, perché non può darla.
 
-1. **Scarica il bridge dal repo** su Raspberry/PC:
+Il piano è diviso in tre fasi temporali. La Fase 1 è la più importante: senza di
+essa le altre due non esistono.
+
+### Fase 1 — PREPARAZIONE (in anticipo, NON durante l'emergenza)
+
+Richiede **tempo e acquisti**: va fatta con calma, prima, non nel momento
+critico. Oggi nessun obbligo di spesa — qui si descrive *cosa servirà*.
+
+1. **Procurati l'hardware** (vedi §2 e i costi §5): moduli LoRa, **antenne**
+   della banda legale, un host per il bridge (Raspberry o un PC che hai già).
+2. **Monta i nodi**: flash firmware (es. Meshtastic), **collega sempre
+   l'antenna** prima di alimentare (trasmettere senza antenna danneggia la radio).
+3. **Scarica e prova il bridge** dal repo, in mock (senza hardware), per
+   verificare la catena bridge→mesh→mappa:
    ```bash
    git clone https://github.com/pezzaliapp/skylisten-real.git
-   cd skylisten-real/bridge
-   ```
-2. **Installa Node.js** (≥ 18) se non presente, poi le dipendenze base:
-   ```bash
-   npm install            # installa 'ws'
-   ```
-3. **Prova subito in mock** (senza hardware), con il mesh server attivo altrove:
-   ```bash
+   cd skylisten-real/bridge && npm install
    BRIDGE_MODE=mock MESH_URL=ws://IP_DEL_SERVER:8787 npm start
    ```
-   Sulla mappa compaiono i nodi `LORA-xx` simulati: conferma che la catena
-   bridge→mesh→mappa funziona.
-4. **Collega il modulo LoRa** via USB e installa il driver seriale:
-   ```bash
-   npm install serialport
-   ```
-5. **Completa `parseFrame()`** in `transports/lora.js` per il formato dei tuoi
-   frame (vedi l'esempio commentato nel file).
-6. **Configura** copiando `config.example.json` in `config.json`:
+   Sulla mappa devono comparire i nodi `LORA-xx` simulati.
+4. **Abilita la radio reale**: con il modulo collegato via USB,
+   `npm install serialport`, poi completa `parseFrame()` in
+   `transports/lora.js` per il formato dei tuoi frame.
+5. **Posiziona e calibra i nodi** sul campo: **almeno 3**, fissi, distribuiti
+   sull'area (non tutti nello stesso punto), riparati dal vento diretto sul
+   microfono; calibra ogni nodo nel suo punto reale.
+6. **Configura la `roomKey`** condivisa (in `config.json`), uguale su bridge e
+   nodi, così solo i tuoi nodi alimentano la rete. *(Privacy invariata: si
+   trasmettono solo eventi numerici, mai audio.)*
    ```json
-   { "meshUrl": "ws://IP_DEL_SERVER:8787", "roomKey": "", "mode": "lora",
-     "serial": { "port": "/dev/ttyUSB0", "baud": 115200 } }
+   { "meshUrl": "ws://IP_DEL_SERVER:8787", "roomKey": "LA_TUA_CHIAVE",
+     "mode": "lora", "serial": { "port": "/dev/ttyUSB0", "baud": 115200 } }
    ```
-   (su Linux la porta è di solito `/dev/ttyUSB0` o `/dev/ttyACM0`; verifica con
-   `ls /dev/tty*` prima e dopo aver collegato il modulo).
-7. **Avvia il bridge reale:**
-   ```bash
-   npm start
-   ```
-   Da questo momento gli eventi dei nodi radio entrano nella mesh e appaiono
-   sulla mappa come i nodi reali.
+7. **Collauda end-to-end una volta** (Fase 2 completa, con hardware vero), poi
+   **spegni**: da qui in poi la rete è *pronta*, non *attiva*.
 
-Quando non serve, **spegni** (Ctrl+C): il bridge torna a essere solo archivio.
+### Fase 2 — ATTIVAZIONE (quando serve, rete già preparata)
+
+Solo se la Fase 1 è stata fatta. In pochi minuti:
+
+1. **Accendi i nodi LoRa** (alimentazione/batteria); verifica LED/display di
+   accensione e che l'antenna sia collegata.
+2. **Accendi l'host** del bridge e del mesh server (stessa rete).
+3. **Avvia il mesh server:**
+   ```bash
+   cd skylisten-real/server && npm start
+   ```
+4. **Avvia il bridge in modalità reale** (config con `mode: "lora"`):
+   ```bash
+   cd skylisten-real/bridge && npm start
+   ```
+5. **Apri la mappa** sui dispositivi e connetti al server:
+   `ws://IP_DEL_SERVER:8787` → *Connetti*.
+6. **Verifica il flusso**: nel log del bridge devono comparire gli eventi; sulla
+   mappa i nodi `LORA-xx` con il loro score, e la zona stimata se ≥3 confermano.
+7. **Se non arrivano eventi**, checklist rapida: antenne collegate · nodi
+   alimentati · porta seriale giusta (`ls /dev/tty*`) · stessa rete/`IP` ·
+   `roomKey` coerente · firewall sulla porta 8787.
+
+Quando non serve, **spegni** (Ctrl+C su bridge e server): torna tutto a riposo.
+
+### Fase 3 — ESERCIZIO E DEGRADO
+
+**Esercizio periodico** (perché funzioni *quando* servirà, non *se*): ogni
+1–2 mesi un "drill" di 10–15 minuti — accendi tutto, ripeti la Fase 2, controlla
+che eventi e mappa rispondano, **verifica le batterie**, aggiorna il software,
+ricalibra se l'ambiente è cambiato. Tieni un breve registro delle prove. Una
+rete mai esercitata è una rete che, nel momento critico, scoprirai non funzionare.
+
+**Degrado se la rete cade** (Internet/host/bridge giù): non si perde tutto.
+- **Modalità autonoma per-dispositivo**: ogni telefono con la PWA installata
+  continua a **rilevare e registrare in locale** (microfono + score + GPS +
+  **export CSV**) anche senza mesh. Si perde la correlazione multi-nodo in
+  tempo reale, **non** il rilevamento né le prove.
+- **I dati si uniscono dopo**: quando la rete torna, o raccogliendo fisicamente
+  i CSV dai dispositivi, e si analizzano insieme.
+- **Priorità di ripristino**: rialza prima il **mesh server** e il **bridge**
+  (sono il punto di correlazione); i nodi che restano accesi ripartono da soli.
+- Onestà: **senza bridge non c'è mappa centrale**. Il valore residuo nel
+  blackout è il logging autonomo locale, da fondere a posteriori — non una
+  sorveglianza continua.
 
 ---
 

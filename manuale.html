@@ -261,6 +261,27 @@ npm start</code></pre>
         <li>Abilitazione del modello nella PWA (TensorFlow.js, offline-first): <a href="model/README.md">model/README.md</a>.</li>
       </ul>
 
+      <h3>Rete radio LoRa (futura) e piano d'emergenza</h3>
+      <p>
+        Per estendere la rete oltre Internet/Wi-Fi servirà hardware radio
+        (LoRa/Meshtastic) e un <em>bridge</em> su Raspberry/PC — tappa futura,
+        <strong>non</strong> a costo zero. Oggi puoi vederne l'anteprima con la
+        <strong>demo simulata</strong> sulla mappa ("Avvia simulazione LoRa"),
+        senza comprare nulla.
+      </p>
+      <p>
+        Il <strong>piano operativo d'emergenza</strong> (cosa preparare prima,
+        come attivare la rete in pochi minuti, esercizio periodico e degrado se la
+        rete cade) è in
+        <a href="docs/HARDWARE-LORA.md">docs/HARDWARE-LORA.md → Piano di attivazione operativa</a>.
+      </p>
+      <blockquote>
+        Onestà: la rete LoRa è un <strong>layer di rilevamento di prossimità</strong>,
+        non un sistema di difesa; non localizza con precisione e <strong>non
+        funziona se l'hardware non è già installato e testato prima</strong>.
+        Niente promesse di protezione.
+      </blockquote>
+
       <h3>Limiti reali e onesti</h3>
       <ul>
         <li>I <strong>timestamp del browser non sono adatti al TDOA preciso</strong> (triangolazione per differenza dei tempi di arrivo): l'app prepara i dati, ma il browser non garantisce la precisione necessaria.</li>

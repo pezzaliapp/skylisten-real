@@ -181,6 +181,21 @@ modello l'app funziona comunque con la sola euristica FFT.
 - Abilitazione del modello nella PWA (TensorFlow.js, offline-first):
   [`model/README.md`](model/README.md).
 
+### Rete radio LoRa (futura) e piano d'emergenza
+
+Per estendere la rete oltre Internet/Wi-Fi servirà hardware radio (LoRa/
+Meshtastic) e un *bridge* su Raspberry/PC — una tappa futura, **non** a costo
+zero. Oggi puoi vederne l'anteprima con la **demo simulata** sulla mappa
+(pulsante "Avvia simulazione LoRa"), senza comprare nulla.
+
+Il **piano operativo d'emergenza** (cosa preparare prima, come attivare la rete
+in pochi minuti quando serve, esercizio periodico e degrado se la rete cade) è in
+[`docs/HARDWARE-LORA.md` → Piano di attivazione operativa](docs/HARDWARE-LORA.md#6-piano-di-attivazione-operativa).
+
+> Onestà: la rete LoRa è un **layer di rilevamento di prossimità**, non un
+> sistema di difesa; non localizza con precisione e **non funziona se l'hardware
+> non è già installato e testato prima**. Niente promesse di protezione.
+
 ### Limiti reali e onesti
 
 - I **timestamp del browser non sono adatti al TDOA preciso** (triangolazione
